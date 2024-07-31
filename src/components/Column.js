@@ -6,14 +6,16 @@ export default function Column({
   items,
   getListStyle,
   getItemStyle,
+  draggingItem,
 }) {
+  console.log('draggingItem:', draggingItem);
   return (
     <Droppable droppableId={droppableId}>
       {(provided, snapshot) => (
         <div
           {...provided.droppableProps}
           ref={provided.innerRef}
-          style={getListStyle(snapshot.isDraggingOver)}
+          style={getListStyle(snapshot.isDraggingOver, droppableId)}
         >
           {items.map((item, index) => (
             <Draggable key={item.id} draggableId={item.id} index={index}>
@@ -24,7 +26,8 @@ export default function Column({
                   {...provided.dragHandleProps}
                   style={getItemStyle(
                     snapshot.isDragging,
-                    provided.draggableProps.style
+                    provided.draggableProps.style,
+                    draggingItem === item.id
                   )}
                 >
                   {item.content}

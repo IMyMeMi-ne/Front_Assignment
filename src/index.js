@@ -7,11 +7,11 @@ import './index.css';
 
 const GRID = 8;
 
-const getItemStyle = (isDragging, draggableStyle) => ({
+const getItemStyle = (isDragging, draggableStyle, isDraggingOverThird) => ({
   userSelect: 'none',
   padding: GRID * 2,
   margin: `0 0 ${GRID}px 0`,
-  background: isDragging ? 'lightgreen' : 'grey',
+  background: isDraggingOverThird ? 'red' : isDragging ? 'lightgreen' : 'grey',
   ...draggableStyle,
 });
 
@@ -33,8 +33,9 @@ const App = () => {
   const [secondItems, setSecondItems] = useState(getItems(10, 'second'));
   const [thirdItems, setThirdItems] = useState(getItems(10, 'third'));
   const [fourthItems, setFourthItems] = useState(getItems(10, 'fourth'));
+  const [draggingItem, setDraggingItem] = useState(null);
 
-  const { onDragEnd } = useDragAndDrop(
+  const { onDragStart, onDragEnd, onDragUpdate } = useDragAndDrop(
     firstItems,
     setFirstItems,
     secondItems,
@@ -42,11 +43,17 @@ const App = () => {
     thirdItems,
     setThirdItems,
     fourthItems,
-    setFourthItems
+    setFourthItems,
+    setDraggingItem,
+    () => {}
   );
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragUpdate={onDragUpdate}
+    >
       <div className="flex">
         <Column
           droppableId="droppable1"
@@ -54,6 +61,7 @@ const App = () => {
           setItems={setFirstItems}
           getListStyle={getListStyle}
           getItemStyle={getItemStyle}
+          draggingItem={draggingItem}
         />
         <Column
           droppableId="droppable2"
@@ -68,6 +76,7 @@ const App = () => {
           setItems={setThirdItems}
           getListStyle={getListStyle}
           getItemStyle={getItemStyle}
+          draggingItem={draggingItem}
         />
         <Column
           droppableId="droppable4"
