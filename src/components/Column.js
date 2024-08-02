@@ -8,7 +8,6 @@ export default function Column({
   getItemStyle,
   draggingItem,
 }) {
-  console.log('draggingItem:', draggingItem);
   return (
     <Droppable droppableId={droppableId}>
       {(provided, snapshot) => (

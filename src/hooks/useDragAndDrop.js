@@ -20,6 +20,12 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
+// 짝수 확인 로직
+const isEven = (content) => {
+  const itemNumber = parseInt(content.split(' ')[1], 10);
+  return itemNumber % 2 === 0;
+};
+
 export default function useDragAndDrop(
   firstItems,
   setFirstItems,
@@ -45,7 +51,6 @@ export default function useDragAndDrop(
           : fourthItems;
       const item = items[source.index];
       setDraggingItemName(item.content);
-      console.log('item content:', item.content);
     },
     [firstItems, secondItems, thirdItems, fourthItems, setDraggingItemName]
   );
@@ -53,7 +58,6 @@ export default function useDragAndDrop(
   const onDragEnd = useCallback(
     (result) => {
       const { source, destination } = result;
-      console.log('source:', source, 'destination:', destination);
       setDraggingItem(null);
       setDraggingItemName(null);
 
@@ -79,10 +83,6 @@ export default function useDragAndDrop(
           ? thirdItems
           : fourthItems;
       const draggingItem = sourceItems[source.index];
-      const draggingItemNumber = parseInt(
-        draggingItem.content.split(' ')[1],
-        10
-      );
 
       // 목적지 아이템 컬럼 확인
       const destinationItems =
@@ -94,18 +94,16 @@ export default function useDragAndDrop(
           ? thirdItems
           : fourthItems;
 
-      // 짝수 확인 로직
-      if (destination.index < destinationItems.length) {
-        const nextItem = destinationItems[destination.index];
-        let nextItemNumber = parseInt(nextItem.content.split(' ')[1], 10);
-        console.log('nextItem:', nextItem, 'nextItemNumber:', nextItemNumber);
-        // 같은 컬럼 내에서 짝수 확인
-        if (source.droppableId === destination.droppableId) {
-          nextItemNumber -= 1;
-        }
-        if (draggingItemNumber % 2 === 0 && nextItemNumber % 2 === 0) {
+      // 드롭 시 다음 아이템 짝수 확인
+      for (let i = 0; i < destinationItems.length; i++) {
+        const nextItem = destinationItems[i];
+        if (
+          nextItem &&
+          isEven(draggingItem.content) &&
+          isEven(nextItem.content)
+        ) {
           return alert(
-            '짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.'
+            '짝수 아이템은 다른 짝수 아이템 앞으로 이동할 수 없습니다.'
           );
         }
       }
@@ -131,7 +129,7 @@ export default function useDragAndDrop(
         const newItems = reorder(items, source.index, destination.index);
         setItems(newItems);
       } else {
-        //다른 컬럼 이동
+        // 다른 컬럼 이동
         const setSourceItems =
           source.droppableId === 'droppable1'
             ? setFirstItems
