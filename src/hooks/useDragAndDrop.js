@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-//짝수 아이템 확인
+// 짝수 아이템 확인
 const isEven = (content) => {
   const itemNumber = parseInt(content.split(' ')[1], 10);
   return itemNumber % 2 === 0;
@@ -9,7 +9,6 @@ const isEven = (content) => {
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
-  //같은 컬럼 내에서 짝수 아이템 위로 이동 금지
   if (isEven(removed.content)) {
     const destinationItem = result[endIndex];
     if (isEven(destinationItem.content)) {
@@ -18,7 +17,6 @@ const reorder = (list, startIndex, endIndex) => {
     }
   }
   result.splice(endIndex, 0, removed);
-  console.log('result:', result);
   return result;
 };
 
@@ -26,7 +24,6 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   const sourceClone = Array.from(source);
   const destClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
-  //다른 컬럼으로 이동할 때 짝수 아이템 위로 이동 금지
   if (isEven(removed.content)) {
     if (droppableDestination.index < destClone.length) {
       const destinationItem = destClone[droppableDestination.index];
@@ -44,7 +41,46 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   const result = {};
   result[droppableSource.droppableId] = sourceClone;
   result[droppableDestination.droppableId] = destClone;
-  console.log('move:', result);
+  return result;
+};
+
+const moveMultiple = (
+  source,
+  destination,
+  droppableSource,
+  destinationInfo,
+  selectedItems
+) => {
+  const sourceClone = Array.from(source);
+  const destClone = Array.from(destination);
+
+  // 멀티 드래그 시 마지막 아이템 기준 짝수 확인
+  const lastSelectedItem = selectedItems[selectedItems.length - 1];
+  const lastItemContent = sourceClone[lastSelectedItem.index].content;
+  const isLastItemEven = isEven(lastItemContent);
+
+  const originalSourceClone = Array.from(source);
+  const originalDestClone = Array.from(destination);
+
+  for (let i = 0; i < selectedItems.length; i++) {
+    const selectedItem = selectedItems[i];
+    const [removed] = sourceClone.splice(selectedItem.index - i, 1);
+    if (isLastItemEven && destinationInfo.index < destClone.length) {
+      const destinationItem = destClone[destinationInfo.index];
+      if (isEven(destinationItem.content)) {
+        alert('짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.');
+        return {
+          [droppableSource.droppableId]: originalSourceClone,
+          [destinationInfo.droppableId]: originalDestClone,
+        };
+      }
+    }
+    destClone.splice(destinationInfo.index + i, 0, removed);
+  }
+
+  const result = {};
+  result[droppableSource.droppableId] = sourceClone;
+  result[destinationInfo.droppableId] = destClone;
   return result;
 };
 
@@ -58,38 +94,22 @@ export default function useDragAndDrop(
   fourthItems,
   setFourthItems,
   setDraggingItem,
-  setDraggingItemName
+  setSelectedItems,
+  selectedItems
 ) {
-  const onDragStart = useCallback(
-    (start) => {
-      const { source } = start;
-      const items =
-        source.droppableId === 'droppable1'
-          ? firstItems
-          : source.droppableId === 'droppable2'
-          ? secondItems
-          : source.droppableId === 'droppable3'
-          ? thirdItems
-          : fourthItems;
-      const item = items[source.index];
-      setDraggingItemName(item.content);
-      console.log('item content:', item.content);
-    },
-    [firstItems, secondItems, thirdItems, fourthItems, setDraggingItemName]
-  );
+  const onDragStart = useCallback(() => {
+    setDraggingItem(null);
+  }, []);
 
   const onDragEnd = useCallback(
     (result) => {
       const { source, destination } = result;
-      console.log('source:', source, 'destination:', destination);
       setDraggingItem(null);
-      setDraggingItemName(null);
 
       if (!destination) {
         return;
       }
 
-      // 첫 번째 컬럼에서 세 번째 컬럼으로 이동 금지
       if (
         source.droppableId === 'droppable1' &&
         destination.droppableId === 'droppable3'
@@ -97,7 +117,6 @@ export default function useDragAndDrop(
         return alert('첫번째 열에서 세번째 열로는 이동할 수 없습니다.');
       }
 
-      // 드래그 중인 아이템의 번호 확인
       const sourceItems =
         source.droppableId === 'droppable1'
           ? firstItems
@@ -107,7 +126,6 @@ export default function useDragAndDrop(
           ? thirdItems
           : fourthItems;
 
-      // 목적지 아이템 컬럼 확인
       const destinationItems =
         destination.droppableId === 'droppable1'
           ? firstItems
@@ -117,7 +135,6 @@ export default function useDragAndDrop(
           ? thirdItems
           : fourthItems;
 
-      // 같은 컬럼 이동
       if (source.droppableId === destination.droppableId) {
         const setItems =
           source.droppableId === 'droppable1'
@@ -138,7 +155,6 @@ export default function useDragAndDrop(
         const newItems = reorder(items, source.index, destination.index);
         setItems(newItems);
       } else {
-        //다른 컬럼 이동
         const setSourceItems =
           source.droppableId === 'droppable1'
             ? setFirstItems
@@ -156,10 +172,29 @@ export default function useDragAndDrop(
             ? setThirdItems
             : setFourthItems;
 
-        const result = move(sourceItems, destinationItems, source, destination);
-        setSourceItems(result[source.droppableId]);
-        setDestItems(result[destination.droppableId]);
+        if (selectedItems.length > 1) {
+          const result = moveMultiple(
+            sourceItems,
+            destinationItems,
+            source,
+            destination,
+            selectedItems
+          );
+          setSourceItems(result[source.droppableId]);
+          setDestItems(result[destination.droppableId]);
+        } else {
+          const result = move(
+            sourceItems,
+            destinationItems,
+            source,
+            destination
+          );
+          setSourceItems(result[source.droppableId]);
+          setDestItems(result[destination.droppableId]);
+        }
       }
+
+      setSelectedItems([]);
     },
     [
       firstItems,
@@ -167,14 +202,19 @@ export default function useDragAndDrop(
       thirdItems,
       fourthItems,
       setDraggingItem,
-      setDraggingItemName,
+      setSelectedItems,
+      selectedItems,
     ]
   );
 
   const onDragUpdate = useCallback(
     (update) => {
-      const { destination, draggableId } = update;
-      if (destination && destination.droppableId === 'droppable3') {
+      const { destination, source, draggableId } = update;
+      if (
+        destination &&
+        destination.droppableId === 'droppable3' &&
+        source.droppableId === 'droppable1'
+      ) {
         setDraggingItem(draggableId);
       } else {
         setDraggingItem(null);

@@ -7,6 +7,8 @@ export default function Column({
   getListStyle,
   getItemStyle,
   draggingItem,
+  selectedItems,
+  onToggleSelectItem,
 }) {
   return (
     <Droppable droppableId={droppableId}>
@@ -26,8 +28,10 @@ export default function Column({
                   style={getItemStyle(
                     snapshot.isDragging,
                     provided.draggableProps.style,
-                    draggingItem === item.id
+                    draggingItem === item.id,
+                    selectedItems.some((selected) => selected.id === item.id)
                   )}
+                  onClick={(e) => onToggleSelectItem(e, item.id, index)}
                 >
                   {item.content}
                 </div>

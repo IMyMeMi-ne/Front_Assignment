@@ -17,8 +17,13 @@ const getItemStyle = (
   userSelect: 'none',
   padding: GRID * 2,
   margin: `0 0 ${GRID}px 0`,
-  backgroundColor: isDraggingOverThird ? 'red' : isDragging ? 'black' : 'grey',
-  border: isSelected ? '2px solid blue' : 'none',
+  backgroundColor: isSelected
+    ? 'purple'
+    : isDraggingOverThird
+    ? 'red'
+    : isDragging
+    ? 'black'
+    : 'grey',
   ...draggableStyle,
   color: 'white',
 });
@@ -61,19 +66,29 @@ const App = () => {
     setDraggingItems
   );
 
-  const { onDragStart, onDragEnd, onDragUpdate, onToggleSelectItem } =
-    useDragAndDrop(
-      firstItems,
-      setFirstItems,
-      secondItems,
-      setSecondItems,
-      thirdItems,
-      setThirdItems,
-      fourthItems,
-      setFourthItems,
-      setDraggingItems,
-      setSelectedItems
-    );
+  const onToggleSelectItem = (e, itemId, index) => {
+    if (e.shiftKey) {
+      if (selectedItems.some((item) => item.id === itemId)) {
+        setSelectedItems(selectedItems.filter((item) => item.id !== itemId));
+      } else {
+        setSelectedItems([...selectedItems, { id: itemId, index }]);
+      }
+    }
+  };
+
+  const { onDragStart, onDragEnd, onDragUpdate } = useDragAndDrop(
+    firstItems,
+    setFirstItems,
+    secondItems,
+    setSecondItems,
+    thirdItems,
+    setThirdItems,
+    fourthItems,
+    setFourthItems,
+    setDraggingItems,
+    setSelectedItems,
+    selectedItems
+  );
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -90,6 +105,8 @@ const App = () => {
             getListStyle={getListStyle}
             getItemStyle={getItemStyle}
             draggingItem={draggingItems}
+            selectedItems={selectedItems}
+            onToggleSelectItem={onToggleSelectItem}
           />
           <Column
             droppableId="droppable2"
@@ -97,6 +114,9 @@ const App = () => {
             setItems={setSecondItems}
             getListStyle={getListStyle}
             getItemStyle={getItemStyle}
+            draggingItem={draggingItems}
+            selectedItems={selectedItems}
+            onToggleSelectItem={onToggleSelectItem}
           />
           <Column
             droppableId="droppable3"
@@ -104,6 +124,9 @@ const App = () => {
             setItems={setThirdItems}
             getListStyle={getListStyle}
             getItemStyle={getItemStyle}
+            draggingItem={draggingItems}
+            selectedItems={selectedItems}
+            onToggleSelectItem={onToggleSelectItem}
           />
           <Column
             droppableId="droppable4"
@@ -111,6 +134,9 @@ const App = () => {
             setItems={setFourthItems}
             getListStyle={getListStyle}
             getItemStyle={getItemStyle}
+            draggingItem={draggingItems}
+            selectedItems={selectedItems}
+            onToggleSelectItem={onToggleSelectItem}
           />
         </div>
       </DragDropContext>
@@ -118,9 +144,18 @@ const App = () => {
         <div className="flex justify-center text-4xl font-bold bg-[#3d3d3d]">
           드래그 앤 드롭
         </div>
-        <hr className="w-full my-4 border-t-2 border-gray-400" />
-        <div className="font-semibold text-xl mt-10 bg-[#3d3d3d]">
+        <hr className="w-full my-4  border-gray-400" />
+
+        <div className="flex justify-center text-2xl font-semibold bg-[#3d3d3d]">
           4개의 컬럼에서 자유롭게 아이템을 드래그 앤 드롭 해보세요!
+        </div>
+        <div className="font-semibold text-xl mt-10 ">
+          <div className="bg-[#3d3d3d]">
+            초기화 버튼을 누르면 모든 아이템이 원상복귀 됩니다.
+          </div>
+          <div className="bg-[#3d3d3d]">
+            Shift를 누른채 클릭하면 여러개를 선택할 수 있습니다.
+          </div>
         </div>
         <div className="mt-4 font-semibold bg-[#3d3d3d]">제약 조건</div>
         <span className="bg-[#3d3d3d]">
