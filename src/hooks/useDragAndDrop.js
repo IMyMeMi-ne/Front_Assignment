@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 // 짝수 아이템 확인
 const isEven = (content) => {
   const itemNumber = parseInt(content.split(' ')[1], 10);
-  return itemNumber % 2 === 0;
+  return itemNumber % 2 === 0 && itemNumber !== 0;
 };
 
 const reorder = (list, startIndex, endIndex) => {

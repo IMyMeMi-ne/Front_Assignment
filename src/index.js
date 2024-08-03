@@ -140,33 +140,33 @@ const App = () => {
           />
         </div>
       </DragDropContext>
-      <div className="flex flex-col ml-7 mr-7 w-full border-2 border-zinc-800 bg-[#3d3d3d] p-4 text-white">
-        <div className="flex justify-center text-4xl font-bold bg-[#3d3d3d]">
+      <div className="flex flex-col ml-7 mr-7 w-full border-2 border-zinc-800 bg-main p-4 text-white">
+        <div className="flex justify-center text-4xl font-bold bg-main">
           드래그 앤 드롭
         </div>
         <hr className="w-full my-4  border-gray-400" />
 
-        <div className="flex justify-center text-2xl font-semibold bg-[#3d3d3d]">
+        <div className="flex justify-center text-2xl font-semibold bg-main">
           4개의 컬럼에서 자유롭게 아이템을 드래그 앤 드롭 해보세요!
         </div>
         <div className="font-semibold text-xl mt-10 ">
-          <div className="bg-[#3d3d3d]">
+          <div className="bg-main">
             초기화 버튼을 누르면 모든 아이템이 원상복귀 됩니다.
           </div>
-          <div className="bg-[#3d3d3d]">
+          <div className="bg-main">
             Shift를 누른채 클릭하면 여러개를 선택할 수 있습니다.
           </div>
         </div>
-        <div className="mt-4 font-semibold bg-[#3d3d3d]">제약 조건</div>
-        <span className="bg-[#3d3d3d]">
+        <div className="mt-4 font-semibold bg-main">제약 조건</div>
+        <span className="bg-main">
           1. 1번째 컬럼에서 3번째 컬럼으로는 이동이 불가능합니다.
         </span>
-        <span className="bg-[#3d3d3d]">
+        <span className="bg-main">
           2. 짝수 아이템의 위로 짝수 아이템을 놓을 수 없습니다.
         </span>
-        <div className="mt-auto bg-[#3d3d3d]">
+        <div className="mt-auto bg-main">
           <button
-            className="w-24 h-16 bg-gray-200 relative p-2 text-[#3d3d3d] text-2xl rounded-xl"
+            className="w-24 h-16 bg-gray-200 relative p-2 text-main text-2xl rounded-xl"
             onClick={reset}
           >
             초기화
