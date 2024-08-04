@@ -44,6 +44,7 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
+//멀티 드래그 앤 드롭
 const moveMultiple = (
   source,
   destination,
@@ -54,25 +55,23 @@ const moveMultiple = (
   const sourceClone = Array.from(source);
   const destClone = Array.from(destination);
 
-  // 멀티 드래그 시 마지막 아이템 기준 짝수 확인
-  const lastSelectedItem = selectedItems[selectedItems.length - 1];
-  const lastItemContent = sourceClone[lastSelectedItem.index].content;
-  const isLastItemEven = isEven(lastItemContent);
-
   const originalSourceClone = Array.from(source);
   const originalDestClone = Array.from(destination);
 
   for (let i = 0; i < selectedItems.length; i++) {
     const selectedItem = selectedItems[i];
     const [removed] = sourceClone.splice(selectedItem.index - i, 1);
-    if (isLastItemEven && destinationInfo.index < destClone.length) {
-      const destinationItem = destClone[destinationInfo.index];
-      if (isEven(destinationItem.content)) {
-        alert('짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.');
-        return {
-          [droppableSource.droppableId]: originalSourceClone,
-          [destinationInfo.droppableId]: originalDestClone,
-        };
+    if (isEven(removed.content)) {
+      const destinationIndex = destinationInfo.index + i;
+      if (destinationIndex < destClone.length) {
+        const destinationItem = destClone[destinationIndex];
+        if (isEven(destinationItem.content)) {
+          alert('짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.');
+          return {
+            [droppableSource.droppableId]: originalSourceClone,
+            [destinationInfo.droppableId]: originalDestClone,
+          };
+        }
       }
     }
     destClone.splice(destinationInfo.index + i, 0, removed);
