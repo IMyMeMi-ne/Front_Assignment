@@ -9,6 +9,7 @@ export default function Column({
   draggingItem,
   selectedItems,
   onToggleSelectItem,
+  isEvenOverEven,
 }) {
   return (
     <Droppable droppableId={droppableId}>
@@ -29,7 +30,8 @@ export default function Column({
                     snapshot.isDragging,
                     provided.draggableProps.style,
                     draggingItem === item.id,
-                    selectedItems.some((selected) => selected.id === item.id)
+                    selectedItems.some((selected) => selected.id === item.id),
+                    isEvenOverEven
                   )}
                   onClick={(e) => onToggleSelectItem(e, item.id, index)}
                 >

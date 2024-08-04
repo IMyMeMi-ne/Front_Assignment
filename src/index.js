@@ -12,18 +12,22 @@ const getItemStyle = (
   isDragging,
   draggableStyle,
   isDraggingOverThird,
-  isSelected
+  isSelected,
+  isEvenOverEven
 ) => ({
   userSelect: 'none',
   padding: GRID * 2,
   margin: `0 0 ${GRID}px 0`,
-  backgroundColor: isSelected
-    ? 'purple'
-    : isDraggingOverThird
-    ? 'red'
-    : isDragging
-    ? 'black'
-    : 'grey',
+  backgroundColor:
+    isDragging && isEvenOverEven
+      ? 'red'
+      : isSelected
+      ? 'purple'
+      : isDraggingOverThird
+      ? 'red'
+      : isDragging
+      ? 'black'
+      : 'grey',
   ...draggableStyle,
   color: 'white',
 });
@@ -76,25 +80,34 @@ const App = () => {
     }
   };
 
-  const { onDragStart, onDragEnd, onDragUpdate } = useDragAndDrop(
-    firstItems,
-    setFirstItems,
-    secondItems,
-    setSecondItems,
-    thirdItems,
-    setThirdItems,
-    fourthItems,
-    setFourthItems,
-    setDraggingItems,
-    setSelectedItems,
-    selectedItems
-  );
+  const { onDragStart, onDragEnd, onDragUpdate, isEvenOverEven } =
+    useDragAndDrop(
+      firstItems,
+      setFirstItems,
+      secondItems,
+      setSecondItems,
+      thirdItems,
+      setThirdItems,
+      fourthItems,
+      setFourthItems,
+      setDraggingItems,
+      setSelectedItems,
+      selectedItems
+    );
+
+  const handleDragStart = (start) => {
+    onDragStart(start);
+  };
+
+  const handleDragEnd = (result) => {
+    onDragEnd(result);
+  };
 
   return (
     <div className="flex flex-col lg:flex-row">
       <DragDropContext
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         onDragUpdate={onDragUpdate}
       >
         <div className="flex">
@@ -107,6 +120,7 @@ const App = () => {
             draggingItem={draggingItems}
             selectedItems={selectedItems}
             onToggleSelectItem={onToggleSelectItem}
+            isEvenOverEven={isEvenOverEven}
           />
           <Column
             droppableId="droppable2"
@@ -117,6 +131,7 @@ const App = () => {
             draggingItem={draggingItems}
             selectedItems={selectedItems}
             onToggleSelectItem={onToggleSelectItem}
+            isEvenOverEven={isEvenOverEven}
           />
           <Column
             droppableId="droppable3"
@@ -127,6 +142,7 @@ const App = () => {
             draggingItem={draggingItems}
             selectedItems={selectedItems}
             onToggleSelectItem={onToggleSelectItem}
+            isEvenOverEven={isEvenOverEven}
           />
           <Column
             droppableId="droppable4"
@@ -137,19 +153,20 @@ const App = () => {
             draggingItem={draggingItems}
             selectedItems={selectedItems}
             onToggleSelectItem={onToggleSelectItem}
+            isEvenOverEven={isEvenOverEven}
           />
         </div>
       </DragDropContext>
-      <div className="flex flex-col ml-7 mr-7 w-full border-2 border-zinc-800 bg-main p-4 text-white">
+      <div className="flex flex-col w-full p-4 text-white border-2 ml-7 mr-7 border-zinc-800 bg-main">
         <div className="flex justify-center text-4xl font-bold bg-main">
           드래그 앤 드롭
         </div>
-        <hr className="w-full my-4  border-gray-400" />
+        <hr className="w-full my-4 border-gray-400" />
 
         <div className="flex justify-center text-2xl font-semibold bg-main">
           4개의 컬럼에서 자유롭게 아이템을 드래그 앤 드롭 해보세요!
         </div>
-        <div className="font-semibold text-xl mt-10 ">
+        <div className="mt-10 text-xl font-semibold ">
           <div className="bg-main">
             초기화 버튼을 누르면 모든 아이템이 원상 복귀됩니다.
           </div>
@@ -166,7 +183,7 @@ const App = () => {
         </span>
         <div className="mt-auto bg-main">
           <button
-            className="w-24 h-16 bg-gray-200 relative p-2 text-main text-2xl rounded-xl"
+            className="relative w-24 h-16 p-2 text-2xl bg-gray-200 text-main rounded-xl"
             onClick={reset}
           >
             초기화

@@ -1,9 +1,17 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 // 짝수 아이템 확인
 const isEven = (content) => {
   const itemNumber = parseInt(content.split(' ')[1], 10);
   return itemNumber % 2 === 0 && itemNumber !== 0;
+};
+
+const getItems = (droppableId, items) => {
+  return items[droppableId] || [];
+};
+
+const getSetItems = (droppableId, setItems) => {
+  return setItems[droppableId] || (() => {});
 };
 
 const reorder = (list, startIndex, endIndex) => {
@@ -46,7 +54,7 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-//멀티 드래그 앤 드롭
+// 멀티 드래그 앤 드롭
 const moveMultiple = (
   source,
   destination,
@@ -68,7 +76,7 @@ const moveMultiple = (
   for (let i = 0; i < selectedItems.length; i++) {
     const selectedItem = selectedItems[i];
     const [removed] = sourceClone.splice(selectedItem.index - i, 1);
-    // 마지막 아이템이 짝수고, 이동 시 짝수 아이템 위로 이동 불가
+    // 마지막 아이템이 짝수고 이동 시 짝수 아이템 위로 이동 불가
     if (isLastItemEven && destinationInfo.index + i < destClone.length) {
       const destinationItem = destClone[destinationInfo.index + i];
       if (isEven(destinationItem.content)) {
@@ -101,14 +109,42 @@ export default function useDragAndDrop(
   setSelectedItems,
   selectedItems
 ) {
-  const onDragStart = useCallback(() => {
-    setDraggingItem(null);
-  }, []);
+  const [isEvenOverEven, setIsEvenOverEven] = useState(false);
+  const [draggedItemEven, setDraggedItemEven] = useState(false);
+
+  const items = {
+    droppable1: firstItems,
+    droppable2: secondItems,
+    droppable3: thirdItems,
+    droppable4: fourthItems,
+  };
+
+  const setItems = {
+    droppable1: setFirstItems,
+    droppable2: setSecondItems,
+    droppable3: setThirdItems,
+    droppable4: setFourthItems,
+  };
+
+  const onDragStart = useCallback(
+    (start) => {
+      const { source, draggableId } = start;
+      const sourceItems = getItems(source.droppableId, items);
+
+      const draggedItem = sourceItems[source.index];
+      setDraggedItemEven(isEven(draggedItem.content));
+      setIsEvenOverEven(false);
+      setDraggingItem(draggableId);
+    },
+    [items, setDraggingItem]
+  );
 
   const onDragEnd = useCallback(
     (result) => {
       const { source, destination } = result;
       setDraggingItem(null);
+      setIsEvenOverEven(false);
+      setDraggedItemEven(false);
 
       if (!destination) {
         return;
@@ -121,60 +157,16 @@ export default function useDragAndDrop(
         return alert('첫번째 열에서 세번째 열로는 이동할 수 없습니다.');
       }
 
-      const sourceItems =
-        source.droppableId === 'droppable1'
-          ? firstItems
-          : source.droppableId === 'droppable2'
-          ? secondItems
-          : source.droppableId === 'droppable3'
-          ? thirdItems
-          : fourthItems;
-
-      const destinationItems =
-        destination.droppableId === 'droppable1'
-          ? firstItems
-          : destination.droppableId === 'droppable2'
-          ? secondItems
-          : destination.droppableId === 'droppable3'
-          ? thirdItems
-          : fourthItems;
+      const sourceItems = getItems(source.droppableId, items);
+      const destinationItems = getItems(destination.droppableId, items);
 
       if (source.droppableId === destination.droppableId) {
-        const setItems =
-          source.droppableId === 'droppable1'
-            ? setFirstItems
-            : source.droppableId === 'droppable2'
-            ? setSecondItems
-            : source.droppableId === 'droppable3'
-            ? setThirdItems
-            : setFourthItems;
-        const items =
-          source.droppableId === 'droppable1'
-            ? firstItems
-            : source.droppableId === 'droppable2'
-            ? secondItems
-            : source.droppableId === 'droppable3'
-            ? thirdItems
-            : fourthItems;
-        const newItems = reorder(items, source.index, destination.index);
-        setItems(newItems);
+        const setItemsFn = getSetItems(source.droppableId, setItems);
+        const newItems = reorder(sourceItems, source.index, destination.index);
+        setItemsFn(newItems);
       } else {
-        const setSourceItems =
-          source.droppableId === 'droppable1'
-            ? setFirstItems
-            : source.droppableId === 'droppable2'
-            ? setSecondItems
-            : source.droppableId === 'droppable3'
-            ? setThirdItems
-            : setFourthItems;
-        const setDestItems =
-          destination.droppableId === 'droppable1'
-            ? setFirstItems
-            : destination.droppableId === 'droppable2'
-            ? setSecondItems
-            : destination.droppableId === 'droppable3'
-            ? setThirdItems
-            : setFourthItems;
+        const setSourceItems = getSetItems(source.droppableId, setItems);
+        const setDestItems = getSetItems(destination.droppableId, setItems);
 
         if (selectedItems.length > 1) {
           const result = moveMultiple(
@@ -200,23 +192,19 @@ export default function useDragAndDrop(
 
       setSelectedItems([]);
     },
-    [
-      firstItems,
-      secondItems,
-      thirdItems,
-      fourthItems,
-      setDraggingItem,
-      setSelectedItems,
-      selectedItems,
-    ]
+    [items, setItems, setDraggingItem, setSelectedItems, selectedItems]
   );
 
   const onDragUpdate = useCallback(
     (update) => {
       const { destination, source, draggableId } = update;
-      // 1번째 컬럼에서 3번째 컬럼으로 이동 시 아이템값 저장
+      if (!destination) {
+        setIsEvenOverEven(false);
+        setDraggingItem(null);
+        return;
+      }
+      //첫번째 열에서 세번째 열로 드래그 시 draggableId 저장
       if (
-        destination &&
         destination.droppableId === 'droppable3' &&
         source.droppableId === 'droppable1'
       ) {
@@ -224,9 +212,17 @@ export default function useDragAndDrop(
       } else {
         setDraggingItem(null);
       }
+      //드래그 짝수 아이템 확인
+      const destinationItems = getItems(destination.droppableId, items);
+      const destinationItem = destinationItems[destination.index];
+      if (isEven(destinationItem.content) && draggedItemEven) {
+        setIsEvenOverEven(true);
+      } else {
+        setIsEvenOverEven(false);
+      }
     },
-    [setDraggingItem]
+    [items, draggedItemEven, setDraggingItem]
   );
 
-  return { onDragStart, onDragEnd, onDragUpdate };
+  return { onDragStart, onDragEnd, onDragUpdate, isEvenOverEven };
 }
