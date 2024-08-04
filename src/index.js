@@ -151,10 +151,10 @@ const App = () => {
         </div>
         <div className="font-semibold text-xl mt-10 ">
           <div className="bg-main">
-            초기화 버튼을 누르면 모든 아이템이 원상복귀 됩니다.
+            초기화 버튼을 누르면 모든 아이템이 원상 복귀됩니다.
           </div>
           <div className="bg-main">
-            Shift를 누른채 클릭하면 여러개를 선택할 수 있습니다.
+            Shift를 누른 채 클릭하면 여러 개를 선택할 수 있습니다.
           </div>
         </div>
         <div className="mt-4 font-semibold bg-main">제약 조건</div>
