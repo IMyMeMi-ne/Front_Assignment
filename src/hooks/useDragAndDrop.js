@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 // 짝수 아이템 확인
 const isEven = (content) => {
   const itemNumber = parseInt(content.split(' ')[1], 10);
-  return itemNumber % 2 === 0 && itemNumber !== 0;
+  return itemNumber % 2 === 0;
 };
 
 const getItems = (droppableId, items) => {
