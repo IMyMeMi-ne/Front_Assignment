@@ -9,6 +9,7 @@ const isEven = (content) => {
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
+  // 같은 컬럼 짝수 아이템 위로 이동 불가
   if (isEven(removed.content)) {
     const destinationItem = result[endIndex];
     if (isEven(destinationItem.content)) {
@@ -24,6 +25,7 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   const sourceClone = Array.from(source);
   const destClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
+  // 다른 컬럼 짝수 아이템 위로 이동 불가
   if (isEven(removed.content)) {
     if (droppableDestination.index < destClone.length) {
       const destinationItem = destClone[droppableDestination.index];
@@ -58,20 +60,23 @@ const moveMultiple = (
   const originalSourceClone = Array.from(source);
   const originalDestClone = Array.from(destination);
 
+  // 멀티 드래그 아이템 중 마지막 아이템이 짝수인지 확인
+  const isLastItemEven = isEven(
+    sourceClone[selectedItems[selectedItems.length - 1].index].content
+  );
+
   for (let i = 0; i < selectedItems.length; i++) {
     const selectedItem = selectedItems[i];
     const [removed] = sourceClone.splice(selectedItem.index - i, 1);
-    if (isEven(removed.content)) {
-      const destinationIndex = destinationInfo.index + i;
-      if (destinationIndex < destClone.length) {
-        const destinationItem = destClone[destinationIndex];
-        if (isEven(destinationItem.content)) {
-          alert('짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.');
-          return {
-            [droppableSource.droppableId]: originalSourceClone,
-            [destinationInfo.droppableId]: originalDestClone,
-          };
-        }
+    // 마지막 아이템이 짝수고, 이동 시 짝수 아이템 위로 이동 불가
+    if (isLastItemEven && destinationInfo.index + i < destClone.length) {
+      const destinationItem = destClone[destinationInfo.index + i];
+      if (isEven(destinationItem.content)) {
+        alert('짝수 아이템은 다른 짝수 아이템 위로 이동할 수 없습니다.');
+        return {
+          [droppableSource.droppableId]: originalSourceClone,
+          [destinationInfo.droppableId]: originalDestClone,
+        };
       }
     }
     destClone.splice(destinationInfo.index + i, 0, removed);
@@ -209,6 +214,7 @@ export default function useDragAndDrop(
   const onDragUpdate = useCallback(
     (update) => {
       const { destination, source, draggableId } = update;
+      // 1번째 컬럼에서 3번째 컬럼으로 이동 시 아이템값 저장
       if (
         destination &&
         destination.droppableId === 'droppable3' &&
