@@ -181,6 +181,9 @@ const App = () => {
         <span className="bg-main">
           2. 짝수 아이템의 위로 짝수 아이템을 놓을 수 없습니다.
         </span>
+        <span className="bg-main">
+          3. 아이템의 색깔이 빨갛게 변하면 이동할 수 없습니다.
+        </span>
         <div className="mt-auto bg-main">
           <button
             className="relative w-24 h-16 p-2 text-2xl bg-gray-200 text-main rounded-xl"
